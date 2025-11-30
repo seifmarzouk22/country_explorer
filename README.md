@@ -144,3 +144,10 @@ The purpose was to learn Flutter basics, architecture, API usage, and version co
 18.Update README.md with project documentation
 19.Final UI polishing & bug fixes
 20.Prepare project for submission
+
+## 📸 App Preview
+![Country Explorer Screenshot](screenshots/home.png)
+
+## 🛠 Environment
+- Flutter: 3.38.3
+- Dart: 3.10.1
