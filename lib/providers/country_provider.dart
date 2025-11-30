@@ -3,54 +3,49 @@ import '../models/country.dart';
 import '../services/country_service.dart';
 
 class CountryProvider extends ChangeNotifier {
-  final CountryService _countryService = CountryService();
+  final CountryService _service = CountryService();
 
-  List<Country> _countries = [];
+  List<Country> _allCountries = [];
   List<Country> _filteredCountries = [];
 
-  bool _isLoading = false;
-  String _errorMessage = '';
+  bool isLoading = false;
+  String? errorMessage;
+  String _searchQuery = "";
 
-  // GETTERS
-  List<Country> get countries => _countries;
-  List<Country> get filteredCountries => _filteredCountries;
+  // GETTER used by the UI
+  List<Country> get countries => _filteredCountries;
 
-  bool get isLoading => _isLoading;
-  String get errorMessage => _errorMessage;
-
-  // FETCH COUNTRIES
-  Future<void> fetchCountries() async {
-    _isLoading = true;
-    _errorMessage = '';
-    notifyListeners();
-
+  // LOAD COUNTRIES
+  Future<void> loadCountries() async {
     try {
-      _countries = await _countryService.fetchCountries();
-
-      // Initialize filtered list (for search)
-      _filteredCountries = _countries;
-
-      _isLoading = false;
+      isLoading = true;
+      errorMessage = null;
       notifyListeners();
+
+      _allCountries = await _service.fetchCountries();
+      _applyFilter();
     } catch (e) {
-      _isLoading = false;
-      _errorMessage = 'Failed to load countries';
+      errorMessage = "Failed to load countries";
+    } finally {
+      isLoading = false;
       notifyListeners();
     }
   }
 
-  // 🔍 SEARCH FUNCTION
-  void search(String query) {
-    if (query.isEmpty) {
-      _filteredCountries = _countries;
-    } else {
-      _filteredCountries = _countries.where((c) {
-        final name = c.name.toLowerCase();
-        final capital = c.capital.toLowerCase();
-        final q = query.toLowerCase();
+  // SEARCH FUNCTION
+  void updateSearch(String query) {
+    _searchQuery = query.toLowerCase();
+    _applyFilter();
+  }
 
-        return name.contains(q) || capital.contains(q);
-      }).toList();
+  // INTERNAL FILTER FUNCTION
+  void _applyFilter() {
+    if (_searchQuery.isEmpty) {
+      _filteredCountries = _allCountries;
+    } else {
+      _filteredCountries = _allCountries
+          .where((c) => c.name.toLowerCase().contains(_searchQuery))
+          .toList();
     }
     notifyListeners();
   }
